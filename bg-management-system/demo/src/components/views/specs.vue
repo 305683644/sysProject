@@ -33,6 +33,7 @@
             background
             layout="prev, pager, next"
             :page-size="pageInfo.size"
+            :current-page ='currentPage'
             :total="count"
             @current-change="getPage"
         ></el-pagination>
@@ -48,10 +49,13 @@
                     <el-input v-model="specsInfo.specsname"></el-input>
                 </el-form-item>
                 <el-form-item
-                    v-for="(item, index) in specsArr"
+                    v-for="(item, index) in specsInfo.attrs"
                     label="规格属性:"
-                    :key="item.value"
+                    :key="item.index"
                     :label-width="formLabelWidth"
+                    :prop="`attrs[${index}].value`"
+                    :rules="{ required: true, message: '请输入商品规格属性', trigger: 'blur' }"
+                    
                 >
                     <el-input style="width:70%" v-model="item.value"></el-input>
                     <el-button v-if="index==0" type="primary" @click="addSpecs">新增规格</el-button>
@@ -74,39 +78,32 @@
 
 <script>
 //引入商品规格接口
-import {
-    getspecsAdd,
-    getspecsInfo,
-    getspecsEdit,
-    getspecsDelete,
-    getspecsCount
-} from '../../utils/axios'
+import { getspecsAdd, getspecsInfo,getspecsEdit, getspecsDelete, getspecsCount} from '../../utils/axios'
 //调取辅助性函数
 import { mapActions, mapGetters } from 'vuex'
 export default {
     data() {
         return {
-            //动态的表单域
-            specsArr: [
-                {
-                    value: ''
-                }
-            ],
-            count: 0, //总条目
-            //分页数据
+            pageCount:0,
+            currentPage:1,
+            count: 0, 
             pageInfo: {
-                size: 5, //代表一个页面查询5条数据
-                page: 1 //一共有多少页面
+                size: 2, 
+                page: 1 
             },
-            isAdd: true, //添加
-            formLabelWidth: '100px', //label宽度
+            isAdd: true, 
+            formLabelWidth: '100px', 
             specsInfo: {
-                specsname: '', //商品规格名称
-                attrs: '', //商品规格属性值
+                specsname: '', 
+                attrs: [
+                    {
+                        value: ''
+                    }
+                ],
                 status: '1'
             },
             editId: 0,
-            dialogIsShow: false, //是否出现弹框
+            dialogIsShow: false,
             rules: {
                 specsname: [
                     {
@@ -122,28 +119,27 @@ export default {
         ...mapGetters(['getStateSpecsList'])
     },
     mounted() {
-        //组件一加载就调取商品规格接口
-        //触发才调取vuex中的商品规格列表
         this.getCount()
     },
     methods: {
         //添加表单
         addSpecs() {
             //根据产品需求对添加规格属性进行限制,最多添加6个规格
-            if (this.specsArr.length <= 6) {
-                //在规格属性数组中添加对象
-                this.specsArr.push({
+            let arr=this.specsInfo.attrs
+            if(arr.length<= 5){
+                arr.push({
                     value: ''
                 })
+                this.specsInfo.attrs = arr
             } else {
                 this.$message.warning('最多添加6个规格，不能再多了呦')
             }
         },
         //移除属性
         removeSpecs(item) {
-            var index = this.specsArr.indexOf(item)
+            var index = this.specsInfo.attrs.indexOf(item)
             if (index !== -1) {
-                this.specsArr.splice(index, 1)
+                this.specsInfo.attrs.splice(index, 1)
             }
         },
         //关闭弹框事件
@@ -154,48 +150,44 @@ export default {
         //重置输入内容
         reset() {
             this.specsInfo = {
-                specsname: '', //商品规格名称
-                // attrs: '', //商品规格属性值
+                specsname: '', 
+                attrs: [
+                    {
+                        value: '',
+                    },
+                ],
                 status: '1'
             }
-            //清除动态表单
-            this.specsArr = [
-                {
-                    value: ''
-                }
-            ]
+            
         },
         //封装一个获取商品规格列表事件
-        ...mapActions(['getActionRoleList']),
+        ...mapActions(['getActionSpecsList']),
         //点击添加按钮出现弹框
         add() {
-            console.log('出现弹框')
-            //出现弹框
             this.dialogIsShow = true
             this.isAdd = true
-            //调取角色列表
-            this.getActionRoleList()
         },
         //点击编辑按钮出现弹框并携带数据
         update(id) {
-            //调取角色列表
-            this.getActionRoleList()
             this.dialogIsShow = true
             this.isAdd = false
             //给编辑id赋值
             this.editId = id
             //调取商品规格查询一条数据
             getspecsInfo({ id }).then(res => {
+                console.log(res)
                 if (res.data.code == 200) {
                     this.specsInfo = res.data.list[0]
                     console.log(this.specsInfo, '信息')
                     //对数据类型进行转化
                     //映射属性 取出每一个item 并赋值给 specsArr对象中的value
+                    let newAttrs = [{ value: '' }]
                     this.specsInfo.attrs.map((item, i) => {
                         if (i == 0) {
-                            this.specsArr[0].value =item
+                            newAttrs[0].value =item
+                            this.specsInfo.attrs = newAttrs
                         } else {
-                            this.specsArr.push({
+                            this.specsInfo.attrs.push({
                                 value: item
                             })
                         }
@@ -214,9 +206,15 @@ export default {
                 .then(() => {
                     //调取删除逻辑
                     getspecsDelete({ id }).then(res => {
+                        console.log(res)
                         if (res.data.code == 200) {
                             //重新调取接口列表
+                            
                             this.getCount()
+                            if (this.getStateSpecsList.length == 1) {
+                                this.pageInfo.page--
+                            }
+                            
                             this.$message.success(res.data.msg)
                         } else {
                             this.$message.error(res.data.msg)
@@ -234,24 +232,33 @@ export default {
         subInfo(formName) {
             this.$refs[formName].validate(valid => {
                 if (valid) {
-                    //对提交数据进行转化 '红色，奶奶灰，白色。。'
-                    let data = this.specsInfo
+                    let data = JSON.parse(JSON.stringify(this.specsInfo))
                     //对规格属性数组进行映射 映射成一个新数组 新数组有你的value
-                    let arr = this.specsArr.map(item => {
+                    let arrInfo = data.attrs.map((item) => {
                         return item.value
                     })
-                    data.attrs = arr ? arr.join(',') : ''
+                    data.attrs = arrInfo.join(',') 
                     //根据isAdd状态去判断执行接口
                     if (this.isAdd) {
                         //调取添加接口
-                        getspecsAdd(this.specsInfo).then(res => {
+                        getspecsAdd(data).then(res => {
                             if (res.data.code == 200) {
+                                
                                 //关闭弹框
                                 this.dialogIsShow = false
                                 //清空输入框
                                 this.reset()
-                                //添加成功重新查询列表
+                                 
+                                 //添加成功重新查询列表
                                 this.getCount()
+                                if (this.getStateSpecsList.length == 2) {
+                                    this.pageCount++
+                                    this.count++
+                                } 
+                               
+                               this.currentPage=this.count
+                               this.pageInfo.page=this.pageCount
+
                                 this.$message.success(res.data.msg)
                             } else if (res.data.code == 500) {
                                 this.$message.warning(res.data.msg)
@@ -260,7 +267,7 @@ export default {
                             }
                         })
                     } else {
-                        let data = this.specsInfo
+                        
                         data.id = this.editId
                         //调取更新接口
                         getspecsEdit(data).then(res => {
@@ -271,6 +278,7 @@ export default {
                                 this.reset()
                                 //添加成功重新查询列表
                                 this.getCount()
+                                // this.pageInfo.page=this.currentPage
                                 this.$message.success(res.data.msg)
                             } else if (res.data.code == 500) {
                                 this.$message.warning(res.data.msg)
@@ -291,22 +299,20 @@ export default {
             getspecsCount().then(res => {
                 if (res.data.code == 200) {
                     this.count = res.data.list[0].total
-                    //如果当前不是第一页并且只有一条数据，我就让页面数量--
-                    if (
-                        this.pageInfo.page != 1 &&
-                        this.getStateSpecsList.length == 1
-                    ) {
-                        this.pageInfo.page--
-                    }
+                    this.pageCount=Math.ceil(this.count/this.pageInfo.size)
+
                     //调取获取商品规格接口列表的行动
                     this.$store.dispatch('getActionSpecsList', this.pageInfo)
                 }
             })
         },
+        
         //当页面发生变化的时候触发该方法
         getPage(n) {
             //n是当前页
             this.pageInfo.page = n
+            this.currentPage=n
+            
             //重新调取列表页面
             this.$store.dispatch('getActionSpecsList', this.pageInfo)
         }

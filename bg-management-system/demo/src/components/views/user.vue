@@ -24,13 +24,12 @@
                 </template>
             </el-table-column>
         </el-table>
-        <!-- 
-            分页器 
-        -->
+        <!-- 分页器 -->
         <el-pagination
             background
             layout="prev, pager, next"
             :page-size="pageInfo.size"
+            :current-page='currentPage'
             :total="count"
             @current-change="getPage"
         ></el-pagination>
@@ -86,10 +85,12 @@ import { mapActions, mapGetters } from 'vuex'
 export default {
     data() {
         return {
+            pageCount:0,
+            currentPage:1,
             count: 0, //总条目
             //分页数据
             pageInfo: {
-                size: 2, //代表一个页面查询2条数据
+                size: 2, //代表一个页面查询5条数据
                 page: 1 //一共有多少页面
             },
             isAdd: true, //添加
@@ -133,6 +134,8 @@ export default {
         //组件一加载就调取用户接口
         //触发才调取vuex中的用户列表
         this.getCount()
+        //调取角色列表
+        this.getActionRoleList()
     },
     methods: {
         //关闭弹框事件
@@ -153,17 +156,16 @@ export default {
         ...mapActions(['getActionRoleList']),
         //点击添加按钮出现弹框
         add() {
-            console.log('出现弹框')
             //出现弹框
             this.dialogIsShow = true
             this.isAdd = true
             //调取角色列表
-            this.getActionRoleList()
+            // this.getActionRoleList()
         },
         //点击编辑按钮出现弹框并携带数据
         update(uid) {
             //调取角色列表
-            this.getActionRoleList()
+            // this.getActionRoleList()
             this.dialogIsShow = true
             this.isAdd = false
             //给编辑id赋值
@@ -171,7 +173,6 @@ export default {
             //调取用户查询一条数据
             getuserInfo({ uid }).then(res => {
                 if (res.data.code == 200) {
-                    console.log(res)
                     this.userInfo = res.data.list
                     this.userInfo.status = this.userInfo.status.toString()
                 }
@@ -190,6 +191,9 @@ export default {
                         if (res.data.code == 200) {
                             //重新调取接口列表
                             this.getCount()
+                            if (this.getStateUserList.length == 1) {
+                                this.pageInfo.page--
+                            }
                             this.$message.success(res.data.msg)
                         } else {
                             this.$message.error(res.data.msg)
@@ -207,7 +211,6 @@ export default {
         subInfo(formName) {
             this.$refs[formName].validate(valid => {
                 if (valid) {
-                    console.log(this.userInfo, '官员表单')
                     //根据isAdd状态去判断执行接口
                     if (this.isAdd) {
                         //调取添加接口
@@ -219,6 +222,13 @@ export default {
                                 this.reset()
                                 //添加成功重新查询列表
                                 this.getCount()
+
+                                 if (this.getStateUserList.length == 2) {
+                                    this.pageCount++
+                                    this.count++
+                                } 
+                                this.currentPage=this.count
+                               this.pageInfo.page=this.pageCount
                                 this.$message.success(res.data.msg)
                             } else if (res.data.code == 500) {
                                 this.$message.warning(res.data.msg)
@@ -258,10 +268,9 @@ export default {
             getuserCount().then(res => {
                 if (res.data.code == 200) {
                     this.count = res.data.list[0].total
-                    //如果当前不是第一页并且只有一条数据，我就让页面数量--
-                    if(this.pageInfo.page !=1 && this.getStateUserList.length==1){
-                        this.pageInfo.page--
-                    }
+                    this.pageCount=Math.ceil(this.count/this.pageInfo.size)
+                    
+                    
                      //调取获取用户接口列表的行动
                         this.$store.dispatch('getActionUserList', this.pageInfo)
                 }
@@ -271,6 +280,7 @@ export default {
         getPage(n) {
             //n是当前页
             this.pageInfo.page = n
+            this.currentPage=n
             //重新调取列表页面
             this.$store.dispatch('getActionUserList', this.pageInfo)
         }

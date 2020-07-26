@@ -14,7 +14,8 @@ for(let i in gCom){
 //清除默认样式
 import './assets/css/reset.css'
 
-
+//设定一个服务器地址用于文件上传
+Vue.prototype.$imgUrl = 'http://localhost:3000'
 
 //全局引入 elementUI
 import ElementUI from 'element-ui'

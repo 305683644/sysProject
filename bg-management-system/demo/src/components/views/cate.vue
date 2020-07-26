@@ -18,7 +18,7 @@
             <el-table-column prop="catename" label="分类名称"></el-table-column>
             <el-table-column prop="img" label="图片">
                 <template slot-scope="item">
-                    <img class="imgInfo" :src="'http://localhost:3000/'+item.row.img" alt />
+                    <img class="imgInfo" :src="$imgUrl+item.row.img" alt />
                 </template>
             </el-table-column>
             <el-table-column prop="status" label="状态">
@@ -158,18 +158,17 @@ export default {
       },
         //移除图片
         handleRemove(file, fileList) {
-            console.log(file, fileList)
+            this.fileList=[]
+            this.imgUrl =''
         },
         //放大图片
         handlePreview(file) {
+            //图片地址
             this.dialogImageUrl = file.url
-            console.log(file.url, '图片的地址。。。')
-            this.dialogVisible = true
 
-            console.log(file, '文件地址')
+            this.dialogVisible = true
         },
         changeInfo(file) {
-            console.log(file, '修改文件')
             this.imgUrl = file.raw
         },
         //关闭弹框事件
@@ -179,6 +178,7 @@ export default {
         },
         //重置输入内容
         reset() {
+            this.imgUrl='',
             this.fileList = [], //上传文件列表
             this.cateInfo = {
                     pid: 0, //上级分类编号
@@ -191,7 +191,6 @@ export default {
         ...mapActions(['getActionCateList']),
         //点击添加按钮出现弹框
         add() {
-            console.log('出现弹框')
             //出现弹框
             this.dialogIsShow = true
             this.isAdd = true
@@ -208,7 +207,7 @@ export default {
                     console.log(res)
                     this.cateInfo = res.data.list
                     //对获取的图片进行格式转化
-                    this.fileList = this.cateInfo.img ? [{url:`http://localhost:3000${this.cateInfo.img}`}] :[]
+                    this.fileList = this.cateInfo.img ? [{url:`${this.$imgUrl}${this.cateInfo.img}`}] :[]
                     this.cateInfo.status = this.cateInfo.status.toString()
                 }
             })
@@ -249,10 +248,11 @@ export default {
                     for (let i in data) {
                         file.append(i, data[i])
                     }
-                    //单独对图片地址进行操作
-                    file.append('img', this.imgUrl)
+                    
                     //根据isAdd状态去判断执行接口
                     if (this.isAdd) {
+                        //单独对图片地址进行操作
+                    file.append('img', this.imgUrl)
                         //调取添加接口
                         getcateAdd(file).then(res => {
                             if (res.data.code == 200) {
@@ -271,12 +271,23 @@ export default {
                         })
                     } else {
                         file.append('id',this.editId)
+                        //如果图片未修改 沿用上次图片地址 如果图片被修改使用新图片地址
+                        if(this.imgUrl=='' && this.fileList.length==0){
+                          this.imgUrl==''
+                        }else{
+                          this.imgUrl  = this.imgUrl ?this.imgUrl : this.cateInfo.img
+                        }
+
+                        file.append('img', this.imgUrl)
+                        
                         //调取更新接口
                         getcateEdit(file).then(res => {
                             if (res.data.code == 200) {
+                                console.log(res)
                                 //关闭弹框
                                 this.dialogIsShow = false
-                                //清空输入框
+                                
+                                // 清空输入框
                                 this.reset()
                                 //添加成功重新查询列表
                                 this.getActionCateList()

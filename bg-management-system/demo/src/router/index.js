@@ -3,7 +3,7 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-export default new Router({
+const router= new Router({
   mode: 'history',
   routes: [
     {
@@ -57,40 +57,55 @@ export default new Router({
           path: '/specs',
           component: () => import('@/components/views/specs'),
           meta: {
-            name: '商品规格'
+            name: '商品规格管理'
           }
         },
         {
           path: '/member',
           component: () => import('@/components/views/member'),
           meta:{
-              name:'会员管理'
+              name:'会员列表'
           }
         },
         {
           path: '/banner',
           component: () => import('@/components/views/banner'),
           meta:{
-              name:'轮播图管理'
+              name:'轮播图列表'
           }
         },
         {
           path: '/seck',
           component: () => import('@/components/views/seck'),
           meta:{
-              name:'限时秒杀管理'
+              name:'活动列表'
           }
         },
         {
           path:'',
-          redirect:()=>import('@/components/views/home')
+          redirect:'/home'
         }
       ]
     },
     {
       path:'*',
-      redirect:'/login'
+      redirect:'/index'
 
     }
   ]
 })
+
+router.beforeEach((to,from,next)=>{
+  if(to.path=='/login'){
+    next()
+    return
+}
+let isLogin = sessionStorage.getItem('userInfo')
+ if(isLogin){
+     next()
+     return
+  }
+ next('/login')
+})
+
+export default router

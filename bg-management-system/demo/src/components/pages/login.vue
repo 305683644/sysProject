@@ -34,7 +34,7 @@ export default {
         rules: {
           username: [
             { required: true, message: '请输入用户名', trigger: 'blur' },
-            { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+            { min:2, max: 6, message: '长度在 2 到 6 个字符', trigger: 'blur' }
           ],
           password: [
             { required: true, message: '请输入密码', trigger: 'blur' },
@@ -49,13 +49,13 @@ export default {
           if (valid) {
             getuserlogin(this.userInfo).then(res=>{
               if(res.data.code==200){
-                  this.$message.success('res.data.msg');
+                  this.$message.success(res.data.msg);
                   //把登录信息存储到本地存储中
                   sessionStorage.setItem('userInfo',JSON.stringify(res.data.list))
                   //登录成功之后就要跳转到index
                   this.$router.push('/home')
               }else{
-                  this.$message.error('res.data.msg');
+                  this.$message.error(res.data.msg);
               }
             })
            

@@ -240,3 +240,9 @@ export function getseckEdit(data){
 export function getseckDelete(data){
     return http.post('/api/seckdelete',data)   
 }
+
+/* ============== 前端接口  ================== */
+//封装一个会员注册接口
+export function getregisterList(data){
+    return http.post('/api/register',data)   
+}

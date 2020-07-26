@@ -17,7 +17,7 @@
                         <span slot="title">首页</span>
                     </el-menu-item>
                     
-                    <el-submenu v-for='item in getStateMenuList' :key='item.id' :index="item.id.toString()">
+                    <el-submenu v-for='item in navMenu' :key='item.id' :index="item.id.toString()">
                         <template slot="title">
                             <i :class="item.icon"></i>
                             <span>{{item.title}}</span>
@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import {mapGetters,mapActions} from 'vuex'
+// import {mapGetters,mapActions} from 'vuex'
 export default {
     data() {
         return {
@@ -39,18 +39,25 @@ export default {
         }
     },
     computed: {
-        ...mapGetters(['getStateMenuList'])
+        // ...mapGetters(['getStateMenuList'])
+        navMenu(){
+            let data = {} 
+            data = sessionStorage.getItem('userInfo') ? JSON.parse(sessionStorage.getItem('userInfo')) :{}
+
+            return data.menus
+        }
     },
     mounted() {
         //组件挂载,更改选中的默认值
         //把路由地址赋值给默认选中状态
         this.defaultActive = this.$route.path
         //页面一加载就调取菜单列表
-        this.getActionMenuList()
-    },
-    methods: {
-        ...mapActions(['getActionMenuList'])
-    },
+        // this.getActionMenuList()
+    }
+    
+    // ,methods: {
+    //     ...mapActions(['getActionMenuList'])
+    // },
 }
 </script>
 
@@ -59,8 +66,14 @@ export default {
     width: 220px;
     overflow: hidden;
 }
-.el-menu {
+.el-col {
+    background-color:#3d5f81;
     min-height: 90vh;
+    width: 200px;
+    
+}
+.el-menu{
+     width: 200px;
 }
 .ii{
     margin-right: 20px;
