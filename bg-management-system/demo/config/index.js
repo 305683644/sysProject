@@ -14,7 +14,9 @@ module.exports = {
       '/api':{
         target:'http://localhost:3000',
         changeOrigin:true,
-        pathRewrite:{'^/api':'http://localhost:3000'}
+        // pathRewrite:{'^/api':''}
+        //没有pathRewrite，接口地址是http://localhost:3000/api,或者这么写效果一样pathRewrite: { '^/api': '/api'}
+        //有pathRewrite，接口地址是http://localhost:3000
       }
     },
 

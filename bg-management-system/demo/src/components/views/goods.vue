@@ -16,7 +16,8 @@
       >
           <el-table-column prop="id" label="商品编号"></el-table-column>
           <el-table-column prop="goodsname" label="商品名称"></el-table-column>
-          <el-table-column prop="price" label="商品价格"></el-table-column>
+          <el-table-column prop="price" label="商品价格">
+          </el-table-column>
           <el-table-column prop="market_price" label="市场价格"></el-table-column>
           <el-table-column prop="img" label="图片">
               <template slot-scope="item">
@@ -313,7 +314,6 @@ export default {
         openEditor() {
             setTimeout(() => {
                 this.editor = new E('#desc')
-                console.log(this.editor, '编辑内容')
                 this.editor.create()
             }, 10)
         },
@@ -490,7 +490,7 @@ export default {
                     for (let i in data) {
                         file.append(i, data[i])
                     }
-                    // console.log(this.goodsInfo,'提交的信息')
+                    
                     //根据isAdd状态去判断执行接口
                     if (this.isAdd) {
                         file.append('img', this.imgUrl)

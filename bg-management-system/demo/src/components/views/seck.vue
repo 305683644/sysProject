@@ -54,13 +54,14 @@
                 <el-form-item
                     label="一级分类："
                     :label-width="formLabelWidth"
-                    placeholder="请选择一级分类"
+                    placeholder="请选择一级分类" 
                     prop="first_cateid"
                 >
                     <el-select
                         @change="cateChange"
                         v-model="seckInfo.first_cateid"
                         placeholder="请选择"
+                        :disabled="disabled" 
                     >
                         <el-option
                             v-for="item in cateArr"
@@ -76,7 +77,7 @@
                     placeholder="请选择二级分类"
                     prop="second_cateid"
                 >
-                    <el-select  @change="getGoods" v-model="seckInfo.second_cateid" placeholder="请选择">
+                    <el-select clearable  :disabled="disabled" @change="getGoods" v-model="seckInfo.second_cateid" placeholder="请选择">
                         <el-option
                             v-for="item in secondArr"
                             :key="item.id"
@@ -91,7 +92,7 @@
                     placeholder="请选择商品"
                     prop="second_cateid"
                 >
-                    <el-select v-model="seckInfo.goodsid" placeholder="请选择">
+                    <el-select clearable :disabled="disabled"  v-model="seckInfo.goodsid" placeholder="请选择">
                         <el-option
                             v-for="item in goodsArr"
                             :key="item.id"
@@ -121,6 +122,7 @@ import {
     getseckAdd,
     getseckEdit,
     getseckInfo,
+    getseckDelete,
     getcateList,
     getgoodsList
 } from '../../utils/axios'
@@ -129,6 +131,7 @@ import { mapActions, mapGetters } from 'vuex'
 export default {
   data() {
         return {
+            disabled:false,
           dialogIsShow :false,
             isAdd : true,
             pickerOptions: {
@@ -205,6 +208,7 @@ export default {
         ...mapGetters(['getStateSeckList']),
     },
     mounted() {
+        this.getActionSeckList()
         //组件一加载获取一级
         this.getCatesList()
     },
@@ -228,7 +232,7 @@ export default {
             this.getCatesList(e)
         },
         //获取商品
-        getGoods(){
+        getGoods(fid,sid){
             //调取接口列表数据
             getgoodsList({
                 fid:this.seckInfo.first_cateid,
@@ -256,16 +260,19 @@ export default {
         cancel() {
             this.reset()
             this.dialogIsShow = false
+            this.disabled=false
         },
         //重置输入内容
         reset() {
+            this.dateValue= [],
             this.seckInfo = {
-                pid: 0, //上级分类编号
-                title: '', //秒杀活动名称
-                icon: '', //图标
-                url: '', //秒杀活动地址
-                type: '1', //类型1目录2秒杀活动
-                status: '1', //1是启用 2是禁用
+                title: '', //限时秒杀名称
+                begintime: '', //开始时间
+                endtime: '', //结束时间
+                first_cateid: '', //商品一级分类编号
+                second_cateid: '', //商品二级分类编号
+                goodsid: '', //商品编号
+                status: '1',
             }
         },
         //点击编辑按钮出现弹框并携带数据
@@ -279,8 +286,12 @@ export default {
                 if (res.data.code == 200) {
                     console.log(res)
                     this.seckInfo = res.data.list
-                    // this.seckInfo.type = this.seckInfo.type.toString()
+                    this.dateValue= [new Date(parseInt(this.seckInfo.begintime)),new Date(parseInt(this.seckInfo.endtime))]
+                    this.cateChange(this.seckInfo.first_cateid)
+                    //商品规格属性
+                    this.getGoods(this.seckInfo.first_cateid,this.seckInfo.second_cateid)
                     this.seckInfo.status = this.seckInfo.status.toString()
+                    this.disabled=true
                 }
             })
         },
@@ -294,6 +305,7 @@ export default {
                 .then(() => {
                     //调取删除逻辑
                     getseckDelete({ id }).then(res => {
+                        console.log(res)
                         if (res.data.code == 200) {
                             //重新调取接口列表
                             this.getActionSeckList()
@@ -319,6 +331,7 @@ export default {
                         //调取添加接口
                         getseckAdd(this.seckInfo).then((res) => {
                             if (res.data.code == 200) {
+                                this.disabled=false
                                 //关闭弹框 清空输入框
                                 this.cancel()
                                 //添加成功重新查询列表
