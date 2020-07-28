@@ -88,7 +88,7 @@ export default {
             currentPage:1,
             count: 0, 
             pageInfo: {
-                size: 2, 
+                size: 5, 
                 page: 1 
             },
             isAdd: true, 
@@ -251,7 +251,7 @@ export default {
                                  
                                  //添加成功重新查询列表
                                 this.getCount()
-                                if (this.getStateSpecsList.length == 2) {
+                                if (this.getStateSpecsList.length == 5) {
                                     this.pageCount++
                                     this.count++
                                 } 

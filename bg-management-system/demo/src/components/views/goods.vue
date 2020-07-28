@@ -19,9 +19,9 @@
           <el-table-column prop="price" label="商品价格">
           </el-table-column>
           <el-table-column prop="market_price" label="市场价格"></el-table-column>
-          <el-table-column prop="img" label="图片">
+          <el-table-column prop="img" label="图片" width="200px">
               <template slot-scope="item">
-                  <img class="imgUrl" :src="$imgUrl+item.row.img" alt="">
+                  <img class="imgUrl imgInfo"  :src="$imgUrl+item.row.img" alt="">
               </template>
           </el-table-column>
           <el-table-column prop="isnew" label="是否新品">
@@ -211,7 +211,7 @@ export default {
           count: 0, //总条目
           pageInfo: {
               //分页数据
-              size: 2, //代表一个页面查询2条数据
+              size: 5, //代表一个页面查询2条数据
               page: 1 //一共有多少页面
             },
           editId:0,
@@ -502,7 +502,7 @@ export default {
                                 //添加成功重新查询列表
                                 this.getCount()
 
-                                 if (this.getStateGoodsList.length == 2) {
+                                 if (this.getStateGoodsList.length == 5) {
                                     this.pageCount++
                                     this.count++
                                 } 
@@ -518,7 +518,7 @@ export default {
                     } else {
                         file.append('id', this.editId)
                         //如果图片未修改 沿用上次图片地址 如果图片被修改使用新图片地址
-                        if(this.imgUrl  ='' && this.fileList.length==0){
+                        if(this.imgUrl  =='' && this.fileList.length==0){
                           this.imgUrl  =''
                         }else{
                           this.imgUrl  = this.imgUrl ?this.imgUrl : this.goodsInfo.img
@@ -580,5 +580,8 @@ export default {
 .el-pagination {
     float: right;
     margin: 16px 0;
+}
+.imgInfo {
+    width: 180px;
 }
 </style>

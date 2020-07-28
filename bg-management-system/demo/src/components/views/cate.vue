@@ -273,7 +273,7 @@ export default {
                         file.append('id',this.editId)
                         //如果图片未修改 沿用上次图片地址 如果图片被修改使用新图片地址
                         if(this.imgUrl=='' && this.fileList.length==0){
-                          this.imgUrl==''
+                          this.imgUrl=''
                         }else{
                           this.imgUrl  = this.imgUrl ?this.imgUrl : this.cateInfo.img
                         }
