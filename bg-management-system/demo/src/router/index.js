@@ -105,6 +105,7 @@ let isLogin = sessionStorage.getItem('userInfo')
      next()
      return
   }
+  // document.documentElement.scrollTop = 0
  next('/login')
 })
 
