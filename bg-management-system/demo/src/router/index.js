@@ -99,7 +99,7 @@ router.beforeEach((to,from,next)=>{
   if(to.path=='/login'){
     next()
     return
-}
+  }
 let isLogin = sessionStorage.getItem('userInfo')
  if(isLogin){
      next()

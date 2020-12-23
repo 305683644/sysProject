@@ -48,6 +48,7 @@
                 <el-form-item label="规格名称：" :label-width="formLabelWidth" prop="specsname">
                     <el-input v-model="specsInfo.specsname"></el-input>
                 </el-form-item>
+                
                 <el-form-item
                     v-for="(item, index) in specsInfo.attrs"
                     label="规格属性:"

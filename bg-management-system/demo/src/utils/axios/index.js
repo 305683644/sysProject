@@ -6,7 +6,7 @@ export function getmenuList(params){
     return http.get('/menulist',{
         params
     })   
-}
+} 
 //封装一个菜单添加接口
 export function getmenuAdd(data){
     return http.post('/menuadd',data)   
